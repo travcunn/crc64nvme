@@ -5,8 +5,8 @@
 #include "textflag.h"
 
 // Fold both 128-bit lanes of acc by the pair broadcast in Y8 and XOR in 32 bytes
-// at off(SI). The data is merged into the clmul temp first so the load overlaps
-// the second multiply.
+// at off(SI). XOR the data into the low product while the high multiply is in
+// flight, leaving one XOR on the accumulator chain.
 #define FOLD_LANE256(acc, off) \
 	VPCLMULQDQ $0x00, Y8, acc, Y9   \
 	VPCLMULQDQ $0x11, Y8, acc, acc  \
@@ -21,7 +21,9 @@
 	VPXOR      Y9, Y7, Y7           \
 	VPXOR      acc, Y7, Y7
 
-// Fold acc by the pair in X8 and XOR in 16 bytes at off(SI).
+// Fold acc by the pair in X8 and XOR in 16 bytes at off(SI). XOR the data into
+// the low product while the high multiply is in flight, leaving one XOR on the
+// accumulator chain.
 #define FOLD_LANE128(acc, off) \
 	VPCLMULQDQ $0x00, X8, acc, X9   \
 	VPCLMULQDQ $0x11, X8, acc, acc  \

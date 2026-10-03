@@ -127,20 +127,22 @@ go test -run xxx -bench Tiers -count 10 . | benchstat -
 At init the package reads the CPU features through `golang.org/x/sys/cpu` and selects one kernel.
 Kernels process whole 16-byte chunks. The last 0 to 15 bytes, and inputs under 16 bytes, go through the generic code.
 
-| Kernel  | Arch  | CPU features required                                 | Block per iteration | Accumulators | Notes |
-|---------|-------|-------------------------------------------------------|--------------------:|-------------:|-------|
-| generic | any   | none                                                   | 8 B                 | n/a          | Slicing-by-8 tables. The only path with `-tags purego` or on other architectures. |
-| sse     | amd64 | SSE4.1, PCLMULQDQ                                     | 128 B               | 8 xmm        | |
-| avx2    | amd64 | AVX2, PCLMULQDQ, VPCLMULQDQ                           | 256 B               | 8 ymm        | VPCLMULQDQ is read from CPUID directly so the VEX-256 form is found on CPUs without AVX-512, such as Zen 3. |
-| avx512  | amd64 | AVX512F, AVX512VL, VPCLMULQDQ                         | 256 B               | 4 zmm        | Used for inputs of 256 bytes or more. Shorter inputs use avx2. |
-| pmull   | arm64 | PMULL                                                  | 256 B               | 16           | Preferred on macOS because Apple cores fuse PMULL with EOR. Remainders of 128 to 255 bytes run an 8-lane loop. |
-| eor3    | arm64 | PMULL, SHA3                                            | 128 B               | 8            | Preferred on other operating systems when SHA3 is present. |
+| Kernel  | Arch  | CPU features required         | Block per iteration | Accumulators | Notes                                                                                                                              |
+|---------|-------|-------------------------------|--------------------:|-------------:|------------------------------------------------------------------------------------------------------------------------------------|
+| generic | any   | none                          |                 8 B |          n/a | Slicing-by-8 for inputs of 64 bytes or more, a byte table below that. The only path with `-tags purego` or on other architectures. |
+| sse     | amd64 | SSE4.1, PCLMULQDQ             |               128 B |        8 xmm |                                                                                                                                    |
+| avx2    | amd64 | AVX2, PCLMULQDQ, VPCLMULQDQ   |               256 B |        8 ymm | VPCLMULQDQ is read from CPUID directly so the VEX-256 form is found on CPUs without AVX-512, such as Zen 3.                        |
+| avx512  | amd64 | AVX512F, AVX512VL, VPCLMULQDQ |               256 B |        4 zmm | Used for inputs of 256 bytes or more. Shorter inputs use avx2.                                                                     |
+| pmull   | arm64 | PMULL                         |               256 B |           16 | Preferred on macOS and iOS because Apple cores fuse PMULL with EOR. Remainders of 128 to 255 bytes run an 8-lane loop.             |
+| eor3    | arm64 | PMULL, SHA3                   |               128 B |            8 | Preferred on other operating systems when SHA3 is present.                                                                         |
 
 Each zmm, ymm or xmm accumulator holds four, two or one 16-byte lanes, so every SIMD kernel keeps 8 or 16 lanes in flight.
 `x/sys/cpu` does not expose the arm64 implementer, so the operating system stands in for "Apple core".
 Asahi Linux on Apple silicon therefore gets eor3, which is correct and slower.
 
 The 256-byte threshold for avx512 is the AVX-512 block size.
+On Zen 4 the avx512 kernel measured faster than avx2 at every size from 256 bytes up.
+Intel parts with AVX-512 were not measured.
 
 Building with `-tags purego` removes all assembly and uses the generic kernel everywhere.
 
@@ -192,12 +194,13 @@ Every kernel is tested against the model at each 16-byte multiple up to 1024 byt
 - Streaming is checked with fixed chunk sizes around the 16, 128 and 256-byte boundaries and with 200 random split patterns.
 - Each test forces every kernel available on the machine, and lowers the avx512 threshold so that kernel also sees short inputs.
 - The fold and Barrett constants are recomputed in tests by independent code and compared with the generated tables.
+- The avx512 kernel runs in CI only when the hosted runner has AVX-512. It was verified on an AMD EPYC 9654P.
 - A CI job runs the arm64 tests under QEMU emulating a Cortex-A72, which has PMULL but no SHA3, to cover the pmull-only selection outside macOS.
 - CI runs `go generate` and fails if the generated files differ from the committed ones.
 
 ## Sources
 
-1. Intel, "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction". <https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf>. Folding and the reduction recipe.
+1. Intel, "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction". <https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf> ([Wayback Machine copy](https://web.archive.org/web/20230315165408/https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf)). Folding and the reduction recipe.
 2. NVM Express, NVM Command Set Specification. <https://nvmexpress.org/specifications/>. Definition of the 64-bit CRC.
 3. Go standard library, `hash/crc64`. <https://pkg.go.dev/hash/crc64>. Test oracle and API shape.
 4. Greg Cook, Catalogue of parametrised CRC algorithms, CRC-64/NVME entry. <https://reveng.sourceforge.io/crc-catalogue/all.htm#crc.cat.crc-64-nvme>. Parameters and check value.

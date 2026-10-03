@@ -5,6 +5,11 @@
 // before any assembly is written, and to localise bugs afterwards: a kernel that
 // disagrees with the oracle but agrees with the model has a math problem, one
 // that disagrees with both has an assembly problem.
+//
+// The model does not mirror every kernel's structure. The arm64 pmull kernel
+// folds 16 lanes down to 8 before its 8-lane loop, and the model has no
+// counterpart to that step. The model proves the algebra instead (any lane
+// count gives the same CRC), and TestKernelsMatchModel pins each kernel to it.
 package model
 
 import (

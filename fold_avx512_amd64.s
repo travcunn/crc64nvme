@@ -5,8 +5,8 @@
 #include "textflag.h"
 
 // Fold all four 128-bit lanes of acc by the pair broadcast in Z4 and XOR in
-// 64 bytes at off(SI). VPTERNLOGQ $0x96 is the three-way XOR, so the data
-// merges with the low product in one step and the chain stays short.
+// 64 bytes at off(SI). VPTERNLOGQ $0x96 is the three-way XOR, so the data and
+// both products meet in one instruction on the accumulator chain.
 #define FOLD_LANE512(acc, off) \
 	VPCLMULQDQ $0x00, Z4, acc, Z5   \
 	VPCLMULQDQ $0x11, Z4, acc, acc  \
@@ -28,7 +28,9 @@
 	VPXOR      X9, X7, X7           \
 	VPXOR      acc, X7, X7
 
-// Fold acc by the pair in X8 and XOR in 16 bytes at off(SI).
+// Fold acc by the pair in X8 and XOR in 16 bytes at off(SI). XOR the data into
+// the low product while the high multiply is in flight, leaving one XOR on the
+// accumulator chain.
 #define FOLD_LANE128(acc, off) \
 	VPCLMULQDQ $0x00, X8, acc, X9   \
 	VPCLMULQDQ $0x11, X8, acc, acc  \
@@ -72,7 +74,8 @@ combine:
 	COMBINE_LANE512(Z0, 176)      // d=192
 	COMBINE_LANE512(Z1, 112)      // d=128
 	COMBINE_LANE512(Z2, 48)       // d=64
-	// Lane j of Z3 is 16*(3-j) bytes ahead of lane 3.
+	// Lane j of Z3 is 16*(3-j) bytes ahead of lane 3. The three VEXTRACTI32X4
+	// must precede the first VEX-128 write to X3, which zeroes Z3's upper lanes.
 	VEXTRACTI32X4 $1, Z3, X1
 	VEXTRACTI32X4 $2, Z3, X2
 	VEXTRACTI32X4 $3, Z3, X7

@@ -9,17 +9,20 @@
 // SIMD pipes retire about 4 per cycle. With 8 accumulators each lane's
 // PMULL->EOR->PMULL chain (about 6 cycles) is revisited before it completes
 // and the loop is latency-bound. 16 accumulators double the window per chain
-// and make it throughput-bound: on an Apple M4 this measured about 25% faster
-// than 8 accumulators at 4 KiB and 30% at 1 MiB.
+// and make it throughput-bound. The message of commit 74ae622 has the Apple M4
+// measurements against the 8-accumulator kernel.
 //
-// After the 16-lane loop, lanes 0..7 are folded 128 bytes forward into lanes
-// 8..15 (8 independent folds with one constant). That leaves an ordinary
-// 8-lane state, so the remainder below 256 bytes runs through the 8-lane loop
-// and the tail never folds more than 7 single lanes.
+// After the 16-lane loop, lanes 0..7 are folded 128 bytes forward and XORed
+// with lanes 8..15 (8 independent folds with one constant), and the results
+// stay in V0..V7. That leaves an ordinary 8-lane state, so the remainder
+// below 256 bytes runs through the 8-lane loop and the tail never folds more
+// than 7 single lanes.
 //
-//	len >= 256:  16-lane loop -> fold to 8 lanes -.
-//	len >= 128:  ---------------------------------+-> 8-lane loop -> combine -.
-//	len <  128:  single lane ------------------------------------------------+-> tail -> reduce
+//	len >= 256:  16-lane loop -> fold to 8 lanes -> [loop] -> combine -.
+//	len >= 128:  8-lane load ---------------------> [loop] -> combine -+
+//	len <  128:  single lane ------------------------------------------+-> tail -> reduce
+//
+// [loop] is the 8-lane loop, which runs zero or more times.
 //
 // Registers: V0..V15 accumulators, V16 constant pair, V17..V18 temps,
 // V20..V23 data.
@@ -32,9 +35,10 @@
 	VPMULL2 V16.D2, acc.D2, acc.Q1    \
 	VEOR    V17.B16, acc.B16, acc.B16
 
-// V7 ^= fold(acc) with the constant pair at off(R3). lo^hi is formed off the
-// V7 chain so only one EOR per lane is loop-carried. The PMULL2 is followed by
-// an EOR into its own destination so Apple cores can fuse that pair.
+// V7 ^= fold(acc) with the constant pair at off(R3). lo^hi is formed in V18
+// so only one EOR per lane is on the V7 dependency chain. The PMULL2 is
+// followed by an EOR into its own destination so Apple cores can fuse that
+// pair.
 #define COMBINE_LANE(acc, off) \
 	ADD     $off, R3, R4              \
 	VLD1    (R4), [V16.B16]           \
