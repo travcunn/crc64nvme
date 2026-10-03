@@ -46,4 +46,5 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y qemu-user-static
       - run: GOARCH=arm64 go test -c -o crc64nvme.arm64.test ./
       - run: qemu-aarch64-static -cpu cortex-a72 ./crc64nvme.arm64.test -test.v -test.run 'TestAvailableTiersListed|TestTiersMatchOracle|TestKernelsMatchModel' 2>&1 | tee qemu.log
-      - run: grep -q 'tiers on this machine: \[generic pmull\]' qemu.log
+      - run: |
+          grep -q 'tiers on this machine: \[generic pmull\]' qemu.log
