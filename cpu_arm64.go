@@ -19,9 +19,9 @@ var availableTiers = detectTiers()
 // the PMULL kernel issues 2 uops per lane against 3 for EOR3. On an Apple M4
 // the 16-accumulator PMULL kernel measured about 28% faster than EOR3 at
 // 1 KiB, 52% at 4 KiB and 24% at 1 MiB.
-// Cores without that fusion (Arm Neoverse V1 and V2) save a uop per lane with
-// EOR3, so EOR3 is expected to be faster there. That expectation comes from
-// uop counts and is unmeasured. x/sys/cpu exposes no implementer ID, so GOOS
+// Cores without that fusion save a uop per lane with EOR3. On Arm Neoverse V1
+// and V2 (AWS Graviton3 and Graviton4) EOR3 measured 1.4 times PMULL at 4 KiB
+// and 1.6 to 1.8 times at 1 MiB. x/sys/cpu exposes no implementer ID, so GOOS
 // stands in for "Apple core". Asahi Linux on Apple silicon therefore gets
 // EOR3, which is correct but gives up the 24 to 52% measured above.
 func detectTiers() []tier {
