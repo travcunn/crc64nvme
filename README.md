@@ -42,7 +42,7 @@ crc := crc64nvme.Checksum(part1)
 crc = crc64nvme.Update(crc, part2) // equals Checksum of part1 followed by part2
 ```
 
-The digest returned by `New` implements `encoding.BinaryMarshaler` and `encoding.BinaryUnmarshaler`, so a partial checksum can be saved and resumed.
+The digest returned by `New` implements `encoding.BinaryMarshaler`, `encoding.BinaryAppender` and `encoding.BinaryUnmarshaler`, so a partial checksum can be saved and resumed.
 
 ## Performance
 

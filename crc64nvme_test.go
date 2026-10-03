@@ -4,6 +4,8 @@ package crc64nvme
 
 import (
 	"bytes"
+	"encoding"
+	"hash"
 	"hash/crc64"
 	"math/rand"
 	"sync"
@@ -109,6 +111,58 @@ func TestMarshal(t *testing.T) {
 		if err := h2.UnmarshalBinary(bad); err == nil {
 			t.Errorf("accepted bad state %q", bad)
 		}
+	}
+}
+
+func TestSumAppends(t *testing.T) {
+	h := New()
+	h.Write([]byte("123456789"))
+	prefix := []byte("prefix")
+	in := append(make([]byte, 0, 64), prefix...)
+	got := h.Sum(in)
+	want := []byte("prefix\xae\x8b\x14\x86\x0a\x79\x98\x88")
+	if !bytes.Equal(got, want) {
+		t.Fatalf("Sum(%q) = %x, want %x", prefix, got, want)
+	}
+	if &got[0] != &in[0] {
+		t.Error("Sum reallocated although the input had spare capacity")
+	}
+	if !bytes.Equal(in[:len(prefix)], prefix) {
+		t.Errorf("Sum modified the prefix: %q", in[:len(prefix)])
+	}
+}
+
+func TestAppendBinary(t *testing.T) {
+	h := New()
+	h.Write([]byte("hello "))
+	ba, ok := h.(encoding.BinaryAppender)
+	if !ok {
+		t.Fatal("digest does not implement encoding.BinaryAppender")
+	}
+	prefix := []byte("prefix")
+	state, err := ba.AppendBinary(append([]byte{}, prefix...))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.HasPrefix(state, prefix) {
+		t.Fatalf("AppendBinary lost the prefix: %q", state)
+	}
+	marshaled, err := h.(encoding.BinaryMarshaler).MarshalBinary()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(state[len(prefix):], marshaled) {
+		t.Fatalf("AppendBinary appended %x, MarshalBinary returned %x", state[len(prefix):], marshaled)
+	}
+	h2 := New()
+	if err := h2.(encoding.BinaryUnmarshaler).UnmarshalBinary(state[len(prefix):]); err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range []hash.Hash64{h, h2} {
+		d.Write([]byte("world"))
+	}
+	if h2.Sum64() != h.Sum64() || h2.Sum64() != Checksum([]byte("hello world")) {
+		t.Fatalf("continuation after AppendBinary round trip: got %#x want %#x", h2.Sum64(), h.Sum64())
 	}
 }
 

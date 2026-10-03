@@ -27,8 +27,8 @@ func Update(crc uint64, p []byte) uint64 { return update(crc, p) }
 type digest struct{ crc uint64 }
 
 // New returns a hash.Hash64 computing CRC-64/NVME. Sum lays the value out in
-// big-endian order. The returned hash implements encoding.BinaryMarshaler and
-// encoding.BinaryUnmarshaler.
+// big-endian order. The returned hash implements encoding.BinaryMarshaler,
+// encoding.BinaryAppender and encoding.BinaryUnmarshaler.
 func New() hash.Hash64 { return &digest{} }
 
 func (d *digest) Size() int      { return Size }
@@ -50,10 +50,13 @@ const (
 	marshalSize  = len(marshalMagic) + Size
 )
 
-func (d *digest) MarshalBinary() ([]byte, error) {
-	b := make([]byte, 0, marshalSize)
+func (d *digest) AppendBinary(b []byte) ([]byte, error) {
 	b = append(b, marshalMagic...)
 	return binary.BigEndian.AppendUint64(b, d.crc), nil
+}
+
+func (d *digest) MarshalBinary() ([]byte, error) {
+	return d.AppendBinary(make([]byte, 0, marshalSize))
 }
 
 var (
