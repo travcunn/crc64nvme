@@ -115,3 +115,31 @@ func TestStreamingAllTiers(t *testing.T) {
 		}
 	})
 }
+
+func TestAVX512Threshold(t *testing.T) {
+	has := false
+	for _, tr := range availableTiers {
+		has = has || tr == tierAVX512
+	}
+	if !has {
+		t.Skip("no AVX-512")
+	}
+	oldTier, oldMin := bestTier, avx512Min
+	t.Cleanup(func() { bestTier, avx512Min = oldTier, oldMin })
+	bestTier = tierAVX512
+	buf := make([]byte, 4096)
+	for i := range buf {
+		buf[i] = byte(i * 7)
+	}
+	for _, min := range []int{16, 256, 1024, 4096} {
+		avx512Min = min
+		for _, size := range []int{min - 16, min - 1, min, min + 1, min + 16, min + 17} {
+			if size < 0 || size > len(buf) {
+				continue
+			}
+			if got, want := Checksum(buf[:size]), oracle(0, buf[:size]); got != want {
+				t.Fatalf("min %d size %d: got %#x want %#x", min, size, got, want)
+			}
+		}
+	}
+}

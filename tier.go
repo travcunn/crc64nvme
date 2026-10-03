@@ -30,8 +30,9 @@ var foldFuncs [numTiers]foldFunc
 var bestTier = tierGeneric
 
 // avx512Min is the smallest input routed to the AVX-512 kernel. Smaller
-// inputs on an AVX-512 CPU use the AVX2 kernel.
-var avx512Min = 1024
+// inputs on an AVX-512 CPU use the AVX2 kernel. 256 is the AVX-512 block size,
+// and on Zen 4 the AVX-512 kernel is faster at every size from there up.
+var avx512Min = 256
 
 func update(crc uint64, p []byte) uint64 {
 	if len(p) < 16 || bestTier == tierGeneric {
