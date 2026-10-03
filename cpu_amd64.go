@@ -27,7 +27,7 @@ func detectTiers() []tier {
 	if cpu.X86.HasSSE41 && cpu.X86.HasPCLMULQDQ {
 		tiers = append(tiers, tierSSE)
 	}
-	if false && cpu.X86.HasAVX2 && cpu.X86.HasPCLMULQDQ && hasVPCLMULQDQ() { // enabled in Task 6
+	if cpu.X86.HasAVX2 && cpu.X86.HasPCLMULQDQ && hasVPCLMULQDQ() {
 		tiers = append(tiers, tierAVX2)
 	}
 	if false && cpu.X86.HasAVX512F && cpu.X86.HasAVX512VL && cpu.X86.HasAVX512VPCLMULQDQ { // enabled in Task 7
@@ -37,10 +37,10 @@ func detectTiers() []tier {
 }
 
 func init() {
-	foldFuncs[tierSSE] = foldSSE
-	// Tasks 5 to 7 register kernels here, before the loop:
-	// foldFuncs[tierSSE] = foldSSE, etc. bestTier is the last entry of
+	// Kernels register here, before the loop. bestTier is the last entry of
 	// availableTiers that has a kernel registered.
+	foldFuncs[tierSSE] = foldSSE
+	foldFuncs[tierAVX2] = foldAVX2
 	for i := len(availableTiers) - 1; i >= 0; i-- {
 		if t := availableTiers[i]; t == tierGeneric || foldFuncs[t] != nil {
 			bestTier = t
