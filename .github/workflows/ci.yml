@@ -1,0 +1,49 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-amd64
+          - os: macos-latest
+            name: macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: gofmt -l . && test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go generate ./... && git diff --exit-code
+      - run: go test -race -v -run 'TestAvailableTiersListed' ./
+      - run: go test -race ./...
+      - run: go test -tags purego ./...
+
+  cross-vet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: GOARCH=arm64 go vet ./... && GOARCH=amd64 GOAMD64=v1 go build ./... && GOARCH=386 go build ./... && GOARCH=riscv64 go build ./...
+
+  qemu-arm64-no-sha3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: sudo apt-get update && sudo apt-get install -y qemu-user-static
+      - run: GOARCH=arm64 go test -c -o crc64nvme.arm64.test ./
+      - run: qemu-aarch64-static -cpu cortex-a72 ./crc64nvme.arm64.test -test.v -test.run 'TestAvailableTiersListed|TestTiersMatchOracle|TestKernelsMatchModel' 2>&1 | tee qemu.log
+      - run: grep -q 'tiers on this machine: \[generic pmull\]' qemu.log
