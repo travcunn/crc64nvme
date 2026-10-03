@@ -1,0 +1,12 @@
+# Local design notes, never published
+docs/superpowers/
+
+# Go build and test output
+*.test
+*.out
+*.prof
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/
