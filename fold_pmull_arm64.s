@@ -12,14 +12,16 @@
 	VPMULL2 V8.D2, acc.D2, acc.Q1     \
 	VEOR    V9.B16, acc.B16, acc.B16
 
-// V7 ^= fold(acc) with the constant pair at off(R3).
+// V7 ^= fold(acc) with the constant pair at off(R3). lo^hi is formed off the
+// V7 chain so only one EOR per lane is loop-carried. The PMULL2 is followed by
+// an EOR into its own destination so Apple cores can fuse that pair.
 #define COMBINE_LANE(acc, off) \
 	ADD     $off, R3, R4              \
 	VLD1    (R4), [V8.B16]            \
 	VPMULL  V8.D1, acc.D1, V9.Q1      \
-	VEOR    V7.B16, V9.B16, V9.B16    \
-	VPMULL2 V8.D2, acc.D2, acc.Q1     \
-	VEOR    V9.B16, acc.B16, V7.B16
+	VPMULL2 V8.D2, acc.D2, V10.Q1     \
+	VEOR    V9.B16, V10.B16, V10.B16  \
+	VEOR    V10.B16, V7.B16, V7.B16
 
 // func foldPMULL(crc uint64, p []byte) uint64
 TEXT ·foldPMULL(SB), NOSPLIT, $0-40

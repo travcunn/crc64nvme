@@ -17,7 +17,8 @@ var availableTiers = detectTiers()
 //
 // Apple cores fuse PMULL with the EOR that follows it into one micro-op, so
 // the PMULL kernel issues 2 uops per lane against 3 for EOR3. On an Apple M4
-// the PMULL kernel measured within 1% of EOR3 at 4 KiB and 6.6% faster at 1 MiB.
+// the PMULL kernel measured 16% faster than EOR3 at 1 KiB, 13% at 4 KiB and
+// 3% at 1 MiB.
 // Cores without that fusion (Arm Neoverse V1 and V2) save a uop with EOR3 and
 // prefer it. x/sys/cpu exposes no implementer ID, so GOOS stands in for
 // "Apple core". Asahi Linux on Apple silicon therefore gets EOR3, which is
