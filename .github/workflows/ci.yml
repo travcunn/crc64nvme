@@ -26,6 +26,7 @@ jobs:
       - run: go test -race -v -run 'TestAvailableTiersListed' ./
       - run: go test -race ./...
       - run: go test -tags purego ./...
+      - run: cd bench && go build ./... && go test -run TestAgree ./
 
   cross-vet:
     runs-on: ubuntu-latest
