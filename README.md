@@ -53,6 +53,13 @@ Tables A and B are the median of 10 runs with the 1-minute load average at 2.4 a
 Tables C and D are the median of 5 runs with load averages of 2.4 to 2.5 on the M4 and 3.2 to 4.1 on the EPYC.
 All implementations in a table ran in the same `go test` invocation.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/throughput-dark.svg">
+  <img alt="Throughput in GB/s against input size, one line per machine" src="docs/throughput-light.svg" width="960">
+</picture>
+
+The chart shows the throughput of each machine's selected kernel against input size, with sizes on a log scale. It plots the same medians as the tables that follow.
+
 **Table A. Apple M4 (macOS, arm64)**
 
 | Size   | this package (pmull) | hash/crc64 |
@@ -120,6 +127,19 @@ Reproduce the per-kernel numbers from the repository root:
 
 ```sh
 go test -run xxx -bench Tiers -count 10 . | benchstat -
+```
+
+Regenerate the chart from the committed results files:
+
+```sh
+go run ./internal/benchchart -out docs \
+	"Apple M4=bench/results/m4.txt" \
+	"AMD EPYC 9654P=bench/results/epyc9654p.txt" \
+	"Intel Xeon 8488C (Sapphire Rapids)=bench/results/sapphirerapids8488c.txt" \
+	"Intel Xeon 8375C (Ice Lake)=bench/results/icelake8375c.txt" \
+	"AWS Graviton4=bench/results/graviton4.txt" \
+	"AWS Graviton3=bench/results/graviton3.txt" \
+	"AWS Graviton2=bench/results/graviton2.txt"
 ```
 
 ## How a kernel is chosen

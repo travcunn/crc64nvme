@@ -1,0 +1,38 @@
+START  0:59  up 12 days, 12:19, 17 users, load averages: 2.44 3.67 5.53
+goos: darwin
+goarch: arm64
+pkg: github.com/travcunn/crc64nvme
+cpu: Apple M4
+BenchmarkTiers/generic/4096-10         	  640731	      1865 ns/op	2195.83 MB/s
+BenchmarkTiers/generic/4096-10         	  644457	      1869 ns/op	2191.91 MB/s
+BenchmarkTiers/generic/4096-10         	  642404	      1867 ns/op	2193.68 MB/s
+BenchmarkTiers/generic/4096-10         	  641112	      1866 ns/op	2194.95 MB/s
+BenchmarkTiers/generic/4096-10         	  625041	      1876 ns/op	2183.19 MB/s
+BenchmarkTiers/eor3/4096-10            	20528830	        58.56 ns/op	69940.59 MB/s
+BenchmarkTiers/eor3/4096-10            	20447676	        58.85 ns/op	69600.57 MB/s
+BenchmarkTiers/eor3/4096-10            	20564436	        61.04 ns/op	67108.79 MB/s
+BenchmarkTiers/eor3/4096-10            	20454950	        58.83 ns/op	69628.04 MB/s
+BenchmarkTiers/eor3/4096-10            	20570854	        58.80 ns/op	69664.03 MB/s
+BenchmarkTiers/pmull/4096-10           	29068182	        42.77 ns/op	95761.50 MB/s
+BenchmarkTiers/pmull/4096-10           	27446397	        43.13 ns/op	94978.99 MB/s
+BenchmarkTiers/pmull/4096-10           	27681154	        42.72 ns/op	95881.27 MB/s
+BenchmarkTiers/pmull/4096-10           	27162302	        42.96 ns/op	95349.88 MB/s
+BenchmarkTiers/pmull/4096-10           	28911772	        42.27 ns/op	96906.59 MB/s
+BenchmarkTiers/generic/1048576-10      	    2395	    484378 ns/op	2164.79 MB/s
+BenchmarkTiers/generic/1048576-10      	    2481	    481593 ns/op	2177.31 MB/s
+BenchmarkTiers/generic/1048576-10      	    2491	    481875 ns/op	2176.03 MB/s
+BenchmarkTiers/generic/1048576-10      	    2484	    483062 ns/op	2170.69 MB/s
+BenchmarkTiers/generic/1048576-10      	    2497	    481523 ns/op	2177.62 MB/s
+BenchmarkTiers/eor3/1048576-10         	   93122	     12943 ns/op	81014.56 MB/s
+BenchmarkTiers/eor3/1048576-10         	   93187	     12886 ns/op	81371.05 MB/s
+BenchmarkTiers/eor3/1048576-10         	   93393	     13180 ns/op	79559.48 MB/s
+BenchmarkTiers/eor3/1048576-10         	   92186	     12897 ns/op	81301.26 MB/s
+BenchmarkTiers/eor3/1048576-10         	   92948	     12909 ns/op	81226.10 MB/s
+BenchmarkTiers/pmull/1048576-10        	  127303	      9506 ns/op	110307.57 MB/s
+BenchmarkTiers/pmull/1048576-10        	  126511	      9455 ns/op	110900.56 MB/s
+BenchmarkTiers/pmull/1048576-10        	  126792	      9496 ns/op	110419.12 MB/s
+BenchmarkTiers/pmull/1048576-10        	  126709	      9704 ns/op	108059.08 MB/s
+BenchmarkTiers/pmull/1048576-10        	  123177	      9833 ns/op	106643.34 MB/s
+PASS
+ok  	github.com/travcunn/crc64nvme	40.364s
+END  0:59  up 12 days, 12:20, 17 users, load averages: 2.54 3.54 5.39

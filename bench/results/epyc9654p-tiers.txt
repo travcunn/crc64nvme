@@ -1,0 +1,48 @@
+START 01:00:12 up 2 days, 13:47, 0 users, load average: 3.23, 4.95, 10.66
+goos: linux
+goarch: amd64
+pkg: github.com/travcunn/crc64nvme
+cpu: AMD EPYC 9654P 96-Core Processor               
+BenchmarkTiers/generic/4096-32         	  535040	      2201 ns/op	1861.15 MB/s
+BenchmarkTiers/generic/4096-32         	  534441	      2207 ns/op	1855.77 MB/s
+BenchmarkTiers/generic/4096-32         	  529652	      2235 ns/op	1832.64 MB/s
+BenchmarkTiers/generic/4096-32         	  563433	      2181 ns/op	1877.79 MB/s
+BenchmarkTiers/generic/4096-32         	  532092	      2176 ns/op	1882.40 MB/s
+BenchmarkTiers/sse/4096-32             	 3797227	       288.3 ns/op	14209.52 MB/s
+BenchmarkTiers/sse/4096-32             	 3672097	       297.8 ns/op	13756.44 MB/s
+BenchmarkTiers/sse/4096-32             	 3768291	       297.3 ns/op	13777.48 MB/s
+BenchmarkTiers/sse/4096-32             	 3757898	       294.5 ns/op	13906.78 MB/s
+BenchmarkTiers/sse/4096-32             	 3543154	       298.4 ns/op	13727.36 MB/s
+BenchmarkTiers/avx2/4096-32            	 6972892	       153.1 ns/op	26752.79 MB/s
+BenchmarkTiers/avx2/4096-32            	 6768204	       153.5 ns/op	26678.20 MB/s
+BenchmarkTiers/avx2/4096-32            	 6981064	       151.9 ns/op	26964.68 MB/s
+BenchmarkTiers/avx2/4096-32            	 6887724	       155.1 ns/op	26407.16 MB/s
+BenchmarkTiers/avx2/4096-32            	 6596793	       153.5 ns/op	26680.26 MB/s
+BenchmarkTiers/avx512/4096-32          	14567665	        81.58 ns/op	50205.36 MB/s
+BenchmarkTiers/avx512/4096-32          	13120018	        84.08 ns/op	48717.78 MB/s
+BenchmarkTiers/avx512/4096-32          	14562261	        81.69 ns/op	50140.38 MB/s
+BenchmarkTiers/avx512/4096-32          	13684681	        81.91 ns/op	50009.08 MB/s
+BenchmarkTiers/avx512/4096-32          	14490151	        80.87 ns/op	50648.70 MB/s
+BenchmarkTiers/generic/1048576-32      	    2192	    557520 ns/op	1880.79 MB/s
+BenchmarkTiers/generic/1048576-32      	    2121	    561479 ns/op	1867.53 MB/s
+BenchmarkTiers/generic/1048576-32      	    2108	    561779 ns/op	1866.53 MB/s
+BenchmarkTiers/generic/1048576-32      	    2125	    550162 ns/op	1905.94 MB/s
+BenchmarkTiers/generic/1048576-32      	    2188	    560333 ns/op	1871.34 MB/s
+BenchmarkTiers/sse/1048576-32          	   14311	     74911 ns/op	13997.57 MB/s
+BenchmarkTiers/sse/1048576-32          	   15492	     76690 ns/op	13672.87 MB/s
+BenchmarkTiers/sse/1048576-32          	   15367	     74495 ns/op	14075.85 MB/s
+BenchmarkTiers/sse/1048576-32          	   16572	     76652 ns/op	13679.65 MB/s
+BenchmarkTiers/sse/1048576-32          	   15535	     76211 ns/op	13758.77 MB/s
+BenchmarkTiers/avx2/1048576-32         	   30555	     37284 ns/op	28123.95 MB/s
+BenchmarkTiers/avx2/1048576-32         	   30752	     37762 ns/op	27768.09 MB/s
+BenchmarkTiers/avx2/1048576-32         	   30130	     37885 ns/op	27678.18 MB/s
+BenchmarkTiers/avx2/1048576-32         	   31340	     38115 ns/op	27510.92 MB/s
+BenchmarkTiers/avx2/1048576-32         	   29914	     37460 ns/op	27992.11 MB/s
+BenchmarkTiers/avx512/1048576-32       	   63411	     18797 ns/op	55784.53 MB/s
+BenchmarkTiers/avx512/1048576-32       	   55224	     19256 ns/op	54455.56 MB/s
+BenchmarkTiers/avx512/1048576-32       	   56606	     19405 ns/op	54036.52 MB/s
+BenchmarkTiers/avx512/1048576-32       	   56164	     19192 ns/op	54635.58 MB/s
+BenchmarkTiers/avx512/1048576-32       	   54798	     18940 ns/op	55363.99 MB/s
+PASS
+ok  	github.com/travcunn/crc64nvme	65.230s
+END 01:01:17 up 2 days, 13:48, 0 users, load average: 4.14, 4.87, 10.25

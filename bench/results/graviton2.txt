@@ -1,0 +1,150 @@
+### CPU
+CPU(s):                                  2
+Model name:                              Neoverse-N1
+BIOS Model name:                         AWS Graviton2
+Flags:                                   fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp
+### Go
+go version go1.26.4 linux/arm64
+### tiers
+    tier_test.go:36: tiers on this machine: [generic pmull], best pmull
+--- PASS: TestAvailableTiersListed (0.00s)
+ok  	github.com/travcunn/crc64nvme	0.003s
+### tests
+ok  	github.com/travcunn/crc64nvme	1.421s
+?   	github.com/travcunn/crc64nvme/internal/gen	[no test files]
+ok  	github.com/travcunn/crc64nvme/internal/kconst	0.003s
+ok  	github.com/travcunn/crc64nvme/internal/model	0.045s
+### bench tiers (count 5)
+BenchmarkTiers/generic/64-2         	19529659	        59.53 ns/op	1075.17 MB/s
+BenchmarkTiers/generic/64-2         	21052104	        57.11 ns/op	1120.71 MB/s
+BenchmarkTiers/generic/64-2         	21040362	        57.81 ns/op	1107.08 MB/s
+BenchmarkTiers/generic/64-2         	21060507	        58.18 ns/op	1099.97 MB/s
+BenchmarkTiers/generic/64-2         	21097584	        56.97 ns/op	1123.34 MB/s
+BenchmarkTiers/pmull/64-2           	54308704	        22.41 ns/op	2855.66 MB/s
+BenchmarkTiers/pmull/64-2           	54257210	        22.48 ns/op	2846.41 MB/s
+BenchmarkTiers/pmull/64-2           	53137858	        22.50 ns/op	2843.94 MB/s
+BenchmarkTiers/pmull/64-2           	52745172	        22.41 ns/op	2856.46 MB/s
+BenchmarkTiers/pmull/64-2           	53099043	        22.41 ns/op	2856.25 MB/s
+BenchmarkTiers/generic/1024-2       	 1481232	       810.9 ns/op	1262.76 MB/s
+BenchmarkTiers/generic/1024-2       	 1478492	       811.0 ns/op	1262.69 MB/s
+BenchmarkTiers/generic/1024-2       	 1479675	       811.7 ns/op	1261.52 MB/s
+BenchmarkTiers/generic/1024-2       	 1479325	       811.2 ns/op	1262.35 MB/s
+BenchmarkTiers/generic/1024-2       	 1480928	       811.6 ns/op	1261.78 MB/s
+BenchmarkTiers/pmull/1024-2         	16048772	        75.02 ns/op	13650.40 MB/s
+BenchmarkTiers/pmull/1024-2         	15944301	        75.11 ns/op	13632.56 MB/s
+BenchmarkTiers/pmull/1024-2         	16001409	        75.13 ns/op	13629.47 MB/s
+BenchmarkTiers/pmull/1024-2         	16057386	        74.91 ns/op	13670.62 MB/s
+BenchmarkTiers/pmull/1024-2         	15997137	        74.85 ns/op	13679.95 MB/s
+BenchmarkTiers/generic/4096-2       	  373060	      3213 ns/op	1274.69 MB/s
+BenchmarkTiers/generic/4096-2       	  373954	      3213 ns/op	1274.79 MB/s
+BenchmarkTiers/generic/4096-2       	  375177	      3210 ns/op	1275.85 MB/s
+BenchmarkTiers/generic/4096-2       	  373168	      3212 ns/op	1275.40 MB/s
+BenchmarkTiers/generic/4096-2       	  372430	      3209 ns/op	1276.51 MB/s
+BenchmarkTiers/pmull/4096-2         	 4920804	       243.7 ns/op	16806.46 MB/s
+BenchmarkTiers/pmull/4096-2         	 4923675	       243.8 ns/op	16803.25 MB/s
+BenchmarkTiers/pmull/4096-2         	 4923687	       243.7 ns/op	16809.42 MB/s
+BenchmarkTiers/pmull/4096-2         	 4923661	       243.8 ns/op	16798.50 MB/s
+BenchmarkTiers/pmull/4096-2         	 4923649	       243.7 ns/op	16807.56 MB/s
+BenchmarkTiers/generic/65536-2      	   23062	     51945 ns/op	1261.64 MB/s
+BenchmarkTiers/generic/65536-2      	   23072	     51797 ns/op	1265.26 MB/s
+BenchmarkTiers/generic/65536-2      	   23179	     52026 ns/op	1259.67 MB/s
+BenchmarkTiers/generic/65536-2      	   23086	     51843 ns/op	1264.13 MB/s
+BenchmarkTiers/generic/65536-2      	   23062	     51984 ns/op	1260.71 MB/s
+BenchmarkTiers/pmull/65536-2        	  329457	      3630 ns/op	18052.05 MB/s
+BenchmarkTiers/pmull/65536-2        	  330561	      3630 ns/op	18053.83 MB/s
+BenchmarkTiers/pmull/65536-2        	  330436	      3630 ns/op	18053.52 MB/s
+BenchmarkTiers/pmull/65536-2        	  330286	      3631 ns/op	18050.92 MB/s
+BenchmarkTiers/pmull/65536-2        	  330582	      3631 ns/op	18048.63 MB/s
+BenchmarkTiers/generic/1048576-2    	    1438	    833545 ns/op	1257.97 MB/s
+BenchmarkTiers/generic/1048576-2    	    1438	    833378 ns/op	1258.22 MB/s
+BenchmarkTiers/generic/1048576-2    	    1437	    833443 ns/op	1258.13 MB/s
+BenchmarkTiers/generic/1048576-2    	    1437	    833198 ns/op	1258.50 MB/s
+BenchmarkTiers/generic/1048576-2    	    1437	    833584 ns/op	1257.91 MB/s
+BenchmarkTiers/pmull/1048576-2      	   20781	     57791 ns/op	18144.27 MB/s
+BenchmarkTiers/pmull/1048576-2      	   20781	     57723 ns/op	18165.50 MB/s
+BenchmarkTiers/pmull/1048576-2      	   20788	     57722 ns/op	18165.85 MB/s
+BenchmarkTiers/pmull/1048576-2      	   20784	     57735 ns/op	18162.03 MB/s
+BenchmarkTiers/pmull/1048576-2      	   20802	     57741 ns/op	18159.95 MB/s
+BenchmarkTiers/generic/67108864-2   	      20	  56431456 ns/op	1189.21 MB/s
+BenchmarkTiers/generic/67108864-2   	      20	  56417678 ns/op	1189.50 MB/s
+BenchmarkTiers/generic/67108864-2   	      20	  56414967 ns/op	1189.56 MB/s
+BenchmarkTiers/generic/67108864-2   	      20	  56436564 ns/op	1189.10 MB/s
+BenchmarkTiers/generic/67108864-2   	      20	  56505585 ns/op	1187.65 MB/s
+BenchmarkTiers/pmull/67108864-2     	     303	   3931709 ns/op	17068.63 MB/s
+BenchmarkTiers/pmull/67108864-2     	     304	   3950628 ns/op	16986.89 MB/s
+BenchmarkTiers/pmull/67108864-2     	     304	   3930095 ns/op	17075.64 MB/s
+BenchmarkTiers/pmull/67108864-2     	     304	   3931233 ns/op	17070.69 MB/s
+BenchmarkTiers/pmull/67108864-2     	     304	   3934268 ns/op	17057.52 MB/s
+### bench compare (count 5)
+BenchmarkCompare/size=64/impl=travcunn-2         	37384053	        32.05 ns/op	1996.66 MB/s
+BenchmarkCompare/size=64/impl=travcunn-2         	37453011	        32.02 ns/op	1998.50 MB/s
+BenchmarkCompare/size=64/impl=travcunn-2         	37387264	        32.05 ns/op	1996.59 MB/s
+BenchmarkCompare/size=64/impl=travcunn-2         	37429873	        32.06 ns/op	1996.51 MB/s
+BenchmarkCompare/size=64/impl=travcunn-2         	37444342	        32.05 ns/op	1996.65 MB/s
+BenchmarkCompare/size=64/impl=stdlib-2           	 6117340	       196.1 ns/op	 326.28 MB/s
+BenchmarkCompare/size=64/impl=stdlib-2           	 6116574	       196.2 ns/op	 326.27 MB/s
+BenchmarkCompare/size=64/impl=stdlib-2           	 6117243	       196.1 ns/op	 326.33 MB/s
+BenchmarkCompare/size=64/impl=stdlib-2           	 6117453	       196.2 ns/op	 326.28 MB/s
+BenchmarkCompare/size=64/impl=stdlib-2           	 6118029	       196.1 ns/op	 326.31 MB/s
+BenchmarkCompare/size=256/impl=travcunn-2        	29119744	        41.28 ns/op	6201.98 MB/s
+BenchmarkCompare/size=256/impl=travcunn-2        	29091588	        41.28 ns/op	6201.19 MB/s
+BenchmarkCompare/size=256/impl=travcunn-2        	28915188	        41.27 ns/op	6203.09 MB/s
+BenchmarkCompare/size=256/impl=travcunn-2        	28933646	        41.30 ns/op	6198.06 MB/s
+BenchmarkCompare/size=256/impl=travcunn-2        	30739675	        41.45 ns/op	6176.23 MB/s
+BenchmarkCompare/size=256/impl=stdlib-2          	 1629789	       736.2 ns/op	 347.72 MB/s
+BenchmarkCompare/size=256/impl=stdlib-2          	 1630068	       736.1 ns/op	 347.78 MB/s
+BenchmarkCompare/size=256/impl=stdlib-2          	 1629655	       736.3 ns/op	 347.71 MB/s
+BenchmarkCompare/size=256/impl=stdlib-2          	 1629978	       736.2 ns/op	 347.72 MB/s
+BenchmarkCompare/size=256/impl=stdlib-2          	 1630063	       736.2 ns/op	 347.74 MB/s
+BenchmarkCompare/size=1024/impl=travcunn-2       	14705724	        81.60 ns/op	12549.29 MB/s
+BenchmarkCompare/size=1024/impl=travcunn-2       	14734603	        81.45 ns/op	12572.21 MB/s
+BenchmarkCompare/size=1024/impl=travcunn-2       	14742980	        81.42 ns/op	12577.48 MB/s
+BenchmarkCompare/size=1024/impl=travcunn-2       	14738464	        81.41 ns/op	12577.94 MB/s
+BenchmarkCompare/size=1024/impl=travcunn-2       	14734926	        81.43 ns/op	12575.61 MB/s
+BenchmarkCompare/size=1024/impl=stdlib-2         	  413959	      2897 ns/op	 353.52 MB/s
+BenchmarkCompare/size=1024/impl=stdlib-2         	  414144	      2897 ns/op	 353.52 MB/s
+BenchmarkCompare/size=1024/impl=stdlib-2         	  414253	      2896 ns/op	 353.56 MB/s
+BenchmarkCompare/size=1024/impl=stdlib-2         	  414106	      2897 ns/op	 353.52 MB/s
+BenchmarkCompare/size=1024/impl=stdlib-2         	  413818	      2897 ns/op	 353.48 MB/s
+BenchmarkCompare/size=4096/impl=travcunn-2       	 4798950	       250.1 ns/op	16376.25 MB/s
+BenchmarkCompare/size=4096/impl=travcunn-2       	 4800112	       250.0 ns/op	16385.40 MB/s
+BenchmarkCompare/size=4096/impl=travcunn-2       	 4800687	       250.0 ns/op	16386.08 MB/s
+BenchmarkCompare/size=4096/impl=travcunn-2       	 4800670	       250.0 ns/op	16385.95 MB/s
+BenchmarkCompare/size=4096/impl=travcunn-2       	 4801302	       250.0 ns/op	16384.94 MB/s
+BenchmarkCompare/size=4096/impl=stdlib-2         	  197048	      6085 ns/op	 673.12 MB/s
+BenchmarkCompare/size=4096/impl=stdlib-2         	  197131	      6086 ns/op	 673.07 MB/s
+BenchmarkCompare/size=4096/impl=stdlib-2         	  197071	      6086 ns/op	 673.05 MB/s
+BenchmarkCompare/size=4096/impl=stdlib-2         	  197110	      6085 ns/op	 673.14 MB/s
+BenchmarkCompare/size=4096/impl=stdlib-2         	  197085	      6085 ns/op	 673.10 MB/s
+BenchmarkCompare/size=65536/impl=travcunn-2      	  329254	      3643 ns/op	17989.48 MB/s
+BenchmarkCompare/size=65536/impl=travcunn-2      	  328899	      3644 ns/op	17982.37 MB/s
+BenchmarkCompare/size=65536/impl=travcunn-2      	  329479	      3640 ns/op	18005.34 MB/s
+BenchmarkCompare/size=65536/impl=travcunn-2      	  329239	      3644 ns/op	17984.92 MB/s
+BenchmarkCompare/size=65536/impl=travcunn-2      	  329485	      3640 ns/op	18002.44 MB/s
+BenchmarkCompare/size=65536/impl=stdlib-2        	   22316	     53762 ns/op	1219.00 MB/s
+BenchmarkCompare/size=65536/impl=stdlib-2        	   22311	     53768 ns/op	1218.86 MB/s
+BenchmarkCompare/size=65536/impl=stdlib-2        	   22314	     53778 ns/op	1218.65 MB/s
+BenchmarkCompare/size=65536/impl=stdlib-2        	   22318	     53755 ns/op	1219.16 MB/s
+BenchmarkCompare/size=65536/impl=stdlib-2        	   22320	     53757 ns/op	1219.11 MB/s
+BenchmarkCompare/size=1048576/impl=travcunn-2    	   20712	     57907 ns/op	18107.80 MB/s
+BenchmarkCompare/size=1048576/impl=travcunn-2    	   20757	     57759 ns/op	18154.24 MB/s
+BenchmarkCompare/size=1048576/impl=travcunn-2    	   20768	     57731 ns/op	18163.19 MB/s
+BenchmarkCompare/size=1048576/impl=travcunn-2    	   20809	     57686 ns/op	18177.32 MB/s
+BenchmarkCompare/size=1048576/impl=travcunn-2    	   20812	     57722 ns/op	18166.07 MB/s
+BenchmarkCompare/size=1048576/impl=stdlib-2      	    1452	    825738 ns/op	1269.87 MB/s
+BenchmarkCompare/size=1048576/impl=stdlib-2      	    1452	    825740 ns/op	1269.86 MB/s
+BenchmarkCompare/size=1048576/impl=stdlib-2      	    1452	    825643 ns/op	1270.01 MB/s
+BenchmarkCompare/size=1048576/impl=stdlib-2      	    1446	    825831 ns/op	1269.72 MB/s
+BenchmarkCompare/size=1048576/impl=stdlib-2      	    1449	    825814 ns/op	1269.75 MB/s
+BenchmarkCompare/size=67108864/impl=travcunn-2   	     304	   3926753 ns/op	17090.17 MB/s
+BenchmarkCompare/size=67108864/impl=travcunn-2   	     303	   3936700 ns/op	17046.98 MB/s
+BenchmarkCompare/size=67108864/impl=travcunn-2   	     304	   3932754 ns/op	17064.09 MB/s
+BenchmarkCompare/size=67108864/impl=travcunn-2   	     304	   3926168 ns/op	17092.71 MB/s
+BenchmarkCompare/size=67108864/impl=travcunn-2   	     304	   3925399 ns/op	17096.06 MB/s
+BenchmarkCompare/size=67108864/impl=stdlib-2     	      20	  56070874 ns/op	1196.86 MB/s
+BenchmarkCompare/size=67108864/impl=stdlib-2     	      20	  56134186 ns/op	1195.51 MB/s
+BenchmarkCompare/size=67108864/impl=stdlib-2     	      20	  56095175 ns/op	1196.34 MB/s
+BenchmarkCompare/size=67108864/impl=stdlib-2     	      20	  56107246 ns/op	1196.08 MB/s
+BenchmarkCompare/size=67108864/impl=stdlib-2     	      20	  56154075 ns/op	1195.08 MB/s
+### done
+
