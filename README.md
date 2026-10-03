@@ -2,11 +2,12 @@
 
 [![CI](https://github.com/travcunn/crc64nvme/actions/workflows/ci.yml/badge.svg)](https://github.com/travcunn/crc64nvme/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/github.com/travcunn/crc64nvme.svg)](https://pkg.go.dev/github.com/travcunn/crc64nvme)
 
-Package crc64nvme computes CRC-64/NVME, the checksum defined by the NVMe specification and used by Amazon S3 as CRC64NVME.
-It has the same API shape as `hash/crc64`, with carry-less-multiply kernels for amd64 and arm64 selected at init and a pure-Go fallback for everything else.
-Measured on seven machines, it runs at 107.5 GB/s on an Apple M4 and 100.9 GB/s on an Intel Xeon Platinum 8488C (Sapphire Rapids) at 1 MiB, single core.
+CRC-64/NVME for Go. It is the checksum NVMe uses on disk and Amazon S3 uses as `CRC64NVME`.
 
-It is an independent implementation written from the public specification and the Intel folding paper, licensed Apache 2.0, with no dependency other than `golang.org/x/sys/cpu`.
+- Same API shape as `hash/crc64`: `Checksum`, `Update`, and `New` for streaming.
+- Carry-less-multiply kernels for amd64 (SSE, AVX2, AVX-512) and arm64 (PMULL, PMULL+EOR3), chosen at init. Pure Go everywhere else.
+- 107.5 GB/s on an Apple M4 and 100.9 GB/s on a Sapphire Rapids Xeon at 1 MiB, single core. Measured on seven machines, see [Performance](#performance).
+- Written from the NVMe specification and the Intel folding paper. Apache 2.0. One dependency, `golang.org/x/sys/cpu`.
 
 ## Install
 
@@ -46,15 +47,19 @@ The digest returned by `New` implements `encoding.BinaryMarshaler`, `encoding.Bi
 
 ## Performance
 
-All numbers are single-core throughput in GB/s (10^9 bytes per second, higher is better), measured on 2026-10-03 with Go 1.26.4 using `go test -bench` and the benchstat median.
-The Apple M4 (macOS 26.2, performance core, measured clock 4.35 GHz) and the AMD EPYC 9654P (Zen 4, Linux, 32-vCPU VM, measured clock 3.64 GHz) were shared with other work during the runs.
-On those two machines Tables A and B are the median of 10 runs, with the 1-minute load average at 2.4 at the start and 2.5 at the end on the M4, and 9.3 and 4.6 on the EPYC.
-Their rows in Tables C and D are the median of 5 runs with load averages of 2.4 to 2.5 on the M4 and 3.2 to 4.1 on the EPYC.
-The other five machines are AWS EC2 instances in us-west-2 running Amazon Linux 2023: an Intel Xeon Platinum 8488C (Sapphire Rapids, c7i.2xlarge), an Intel Xeon Platinum 8375C (Ice Lake, c6i.2xlarge), and AWS Graviton4 (Neoverse V2, c8g.xlarge), Graviton3 (Neoverse V1, c7g.large) and Graviton2 (Neoverse N1, c6g.large).
-Each ran its benchmarks alone on its own instance, in one session per machine, and every figure from them is the median of 5 runs.
-The Graviton2 and Graviton3 instances have 2 vCPUs.
-The Sapphire Rapids, Ice Lake and Graviton4 runs include the kernel loop alignment added after v0.1.0, and the other four do not.
-Tables A and B for a machine come from the same `go test` invocation.
+All numbers are single-core throughput in GB/s (10^9 bytes per second, higher is better), measured on 2026-10-03 with Go 1.26.4, `go test -bench`, and the benchstat median.
+
+| Machine                            | Where                                            | Runs per figure         | Notes                                              |
+|------------------------------------|--------------------------------------------------|-------------------------|----------------------------------------------------|
+| Apple M4                           | macOS 26.2, performance core, 4.35 GHz measured  | 10 (Tables A, B), 5 (C, D) | shared with other work, load average 2.4 to 2.5 |
+| AMD EPYC 9654P                     | Zen 4, Linux, 32-vCPU VM, 3.64 GHz measured      | 10 (Tables A, B), 5 (C, D) | shared with other work, load average 3.2 to 9.3 |
+| Intel Xeon 8488C (Sapphire Rapids) | AWS c7i.2xlarge                                  | 5                       | alone on the instance, includes the loop alignment |
+| Intel Xeon 8375C (Ice Lake)        | AWS c6i.2xlarge                                  | 5                       | alone on the instance, includes the loop alignment |
+| AWS Graviton4                      | Neoverse V2, AWS c8g.xlarge                      | 5                       | alone on the instance, includes the loop alignment |
+| AWS Graviton3                      | Neoverse V1, AWS c7g.large (2 vCPU)              | 5                       | alone on the instance                              |
+| AWS Graviton2                      | Neoverse N1, AWS c6g.large (2 vCPU)              | 5                       | alone on the instance                              |
+
+The AWS instances ran Amazon Linux 2023 in us-west-2. "Loop alignment" is the kernel change added after v0.1.0. Tables A and B for a machine come from the same `go test` invocation.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/throughput-dark.svg">
