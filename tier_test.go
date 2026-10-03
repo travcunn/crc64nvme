@@ -4,6 +4,10 @@ package crc64nvme
 
 import (
 	"math/rand"
+	"os"
+	"runtime"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/travcunn/crc64nvme/internal/model"
@@ -22,6 +26,9 @@ func forEachTier(t *testing.T, fn func(t *testing.T)) {
 	}
 }
 
+// TestAvailableTiersListed logs the detected tiers. When CRC64NVME_EXPECT_TIERS
+// is set to a comma-separated list of tier names, it also fails unless every
+// named tier was detected, so CI catches a runner whose detection regressed.
 func TestAvailableTiersListed(t *testing.T) {
 	if len(availableTiers) == 0 || availableTiers[0] != tierGeneric {
 		t.Fatalf("availableTiers = %v", availableTiers)
@@ -31,6 +38,58 @@ func TestAvailableTiersListed(t *testing.T) {
 		if foldFuncs[tr] == nil {
 			t.Errorf("tier %v listed without a kernel", tr)
 		}
+	}
+	if expect := os.Getenv("CRC64NVME_EXPECT_TIERS"); expect != "" {
+		for _, name := range strings.Split(expect, ",") {
+			name = strings.TrimSpace(name)
+			if !slices.ContainsFunc(availableTiers, func(tr tier) bool { return tr.String() == name }) {
+				t.Errorf("CRC64NVME_EXPECT_TIERS names %q, which is not in availableTiers %v", name, availableTiers)
+			}
+		}
+	}
+}
+
+func TestSelectBestTier(t *testing.T) {
+	old := foldFuncs
+	t.Cleanup(func() { foldFuncs = old })
+	stub := func(crc uint64, _ []byte) uint64 { return crc }
+	foldFuncs = [numTiers]foldFunc{}
+	foldFuncs[tierSSE] = stub
+	foldFuncs[tierPMULL] = stub
+	foldFuncs[tierEOR3] = stub
+	for _, c := range []struct {
+		tiers []tier
+		want  tier
+	}{
+		{nil, tierGeneric},
+		{[]tier{tierGeneric}, tierGeneric},
+		{[]tier{tierGeneric, tierSSE}, tierSSE},
+		{[]tier{tierGeneric, tierSSE, tierAVX2}, tierSSE},
+		{[]tier{tierGeneric, tierAVX2, tierAVX512}, tierGeneric},
+		{[]tier{tierGeneric, tierEOR3, tierPMULL}, tierPMULL},
+		{[]tier{tierGeneric, tierPMULL, tierEOR3}, tierEOR3},
+	} {
+		if got := selectBestTier(c.tiers); got != c.want {
+			t.Errorf("selectBestTier(%v) = %v, want %v", c.tiers, got, c.want)
+		}
+	}
+}
+
+// TestArm64TierSelection pins the arm64 preference: PMULL on Apple cores
+// (darwin, ios), EOR3 elsewhere when both kernels are available.
+func TestArm64TierSelection(t *testing.T) {
+	if runtime.GOARCH != "arm64" {
+		t.Skip("arm64 only")
+	}
+	if !slices.Contains(availableTiers, tierPMULL) || !slices.Contains(availableTiers, tierEOR3) {
+		t.Skipf("needs both pmull and eor3, have %v", availableTiers)
+	}
+	want := tierEOR3
+	if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
+		want = tierPMULL
+	}
+	if bestTier != want {
+		t.Fatalf("GOOS %s, tiers %v: bestTier = %v, want %v", runtime.GOOS, availableTiers, bestTier, want)
 	}
 }
 

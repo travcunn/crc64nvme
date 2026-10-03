@@ -2,8 +2,9 @@
 
 package crc64nvme
 
-// tier identifies a kernel. Later tasks add kernels and the CPU detection
-// that sets bestTier at init. Tests override bestTier directly.
+// tier identifies a kernel. Kernels register in the init function of
+// cpu_amd64.go or cpu_arm64.go, which also sets bestTier. Tests override
+// bestTier directly.
 type tier uint8
 
 const (
@@ -26,8 +27,21 @@ type foldFunc func(crc uint64, p []byte) uint64
 // foldFuncs is filled by cpu_*.go for the tiers this binary and CPU support.
 var foldFuncs [numTiers]foldFunc
 
-// bestTier is the fastest tier available, chosen at init by cpu_*.go.
+// bestTier is the fastest tier available, chosen at init by cpu_amd64.go or
+// cpu_arm64.go.
 var bestTier = tierGeneric
+
+// selectBestTier returns the last entry of tiers that can run: tierGeneric or
+// a tier with a kernel registered in foldFuncs. detectTiers orders tiers so
+// the preferred kernel comes last.
+func selectBestTier(tiers []tier) tier {
+	for i := len(tiers) - 1; i >= 0; i-- {
+		if t := tiers[i]; t == tierGeneric || foldFuncs[t] != nil {
+			return t
+		}
+	}
+	return tierGeneric
+}
 
 // avx512Min is the smallest input routed to the AVX-512 kernel. Smaller
 // inputs on an AVX-512 CPU use the AVX2 kernel. 256 is the AVX-512 block size,

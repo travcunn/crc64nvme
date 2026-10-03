@@ -37,15 +37,9 @@ func detectTiers() []tier {
 }
 
 func init() {
-	// Kernels register here, before the loop. bestTier is the last entry of
-	// availableTiers that has a kernel registered.
+	// Kernels register before selectBestTier reads foldFuncs.
 	foldFuncs[tierSSE] = foldSSE
 	foldFuncs[tierAVX2] = foldAVX2
 	foldFuncs[tierAVX512] = foldAVX512
-	for i := len(availableTiers) - 1; i >= 0; i-- {
-		if t := availableTiers[i]; t == tierGeneric || foldFuncs[t] != nil {
-			bestTier = t
-			break
-		}
-	}
+	bestTier = selectBestTier(availableTiers)
 }

@@ -13,47 +13,38 @@ import (
 var availableTiers = detectTiers()
 
 // detectTiers lists every tier this CPU supports, ordered so that the
-// preferred kernel comes last (bestTier picks the last one with a kernel).
+// preferred kernel comes last (selectBestTier picks the last one with a kernel).
 //
 // Apple cores fuse PMULL with the EOR that follows it into one micro-op, so
 // the PMULL kernel issues 2 uops per lane against 3 for EOR3. On an Apple M4
-// the PMULL kernel measured 16% faster than EOR3 at 1 KiB, 13% at 4 KiB and
-// 3% at 1 MiB.
-// Cores without that fusion (Arm Neoverse V1 and V2) save a uop with EOR3 and
-// prefer it. x/sys/cpu exposes no implementer ID, so GOOS stands in for
-// "Apple core". Asahi Linux on Apple silicon therefore gets EOR3, which is
-// correct and slightly slower.
+// the 16-accumulator PMULL kernel measured about 28% faster than EOR3 at
+// 1 KiB, 52% at 4 KiB and 24% at 1 MiB.
+// Cores without that fusion (Arm Neoverse V1 and V2) save a uop per lane with
+// EOR3, so EOR3 is expected to be faster there. That expectation comes from
+// uop counts and is unmeasured. x/sys/cpu exposes no implementer ID, so GOOS
+// stands in for "Apple core". Asahi Linux on Apple silicon therefore gets
+// EOR3, which is correct but gives up the 24 to 52% measured above.
 func detectTiers() []tier {
-	tiers := []tier{tierGeneric}
 	hasPMULL := cpu.ARM64.HasPMULL
-	hasEOR3 := cpu.ARM64.HasPMULL && cpu.ARM64.HasSHA3
-	if runtime.GOOS == "darwin" {
-		if hasEOR3 {
-			tiers = append(tiers, tierEOR3)
-		}
-		if hasPMULL {
-			tiers = append(tiers, tierPMULL)
-		}
-		return tiers
+	hasEOR3 := hasPMULL && cpu.ARM64.HasSHA3
+	appleCore := runtime.GOOS == "darwin" || runtime.GOOS == "ios"
+
+	tiers := []tier{tierGeneric}
+	if hasEOR3 && appleCore {
+		tiers = append(tiers, tierEOR3)
 	}
 	if hasPMULL {
 		tiers = append(tiers, tierPMULL)
 	}
-	if hasEOR3 {
+	if hasEOR3 && !appleCore {
 		tiers = append(tiers, tierEOR3)
 	}
 	return tiers
 }
 
 func init() {
-	// Kernels register here, before the loop. bestTier is the last entry of
-	// availableTiers that has a kernel registered.
+	// Kernels register before selectBestTier reads foldFuncs.
 	foldFuncs[tierPMULL] = foldPMULL
 	foldFuncs[tierEOR3] = foldEOR3
-	for i := len(availableTiers) - 1; i >= 0; i-- {
-		if t := availableTiers[i]; t == tierGeneric || foldFuncs[t] != nil {
-			bestTier = t
-			break
-		}
-	}
+	bestTier = selectBestTier(availableTiers)
 }
