@@ -10,3 +10,6 @@ docs/superpowers/
 .DS_Store
 .idea/
 .vscode/
+
+# Agent workspace scratch, never published
+.superpowers/
