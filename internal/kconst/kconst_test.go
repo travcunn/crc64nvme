@@ -46,6 +46,28 @@ func rev64(v uint64) uint64 {
 	return r
 }
 
+func TestK(t *testing.T) {
+	for i, pair := range Pairs {
+		d := 16 * (i + 1)
+		for _, c := range []struct {
+			e    int
+			want uint64
+		}{{8*d + 63, pair[0]}, {8*d - 1, pair[1]}} {
+			if v, ok := K(c.e); !ok || v != c.want {
+				t.Errorf("K(%d) = %#x, %v; want %#x, true", c.e, v, ok, c.want)
+			}
+		}
+	}
+	if v, ok := K(127); !ok || v != K127 {
+		t.Errorf("K(127) = %#x, %v; want %#x, true", v, ok, K127)
+	}
+	for _, e := range []int{-1, 0, 63, 128, 4096, 4160} {
+		if v, ok := K(e); ok || v != 0 {
+			t.Errorf("K(%d) = %#x, %v; want 0, false", e, v, ok)
+		}
+	}
+}
+
 func TestFoldConstants(t *testing.T) {
 	for i, pair := range Pairs {
 		d := 16 * (i + 1)

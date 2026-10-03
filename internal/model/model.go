@@ -57,7 +57,9 @@ func reduce(r lane) uint64 {
 }
 
 // Fold continues crc over p exactly as a kernel with the given number of 16-byte
-// accumulator lanes does. len(p) must be a non-zero multiple of 16.
+// accumulator lanes does. len(p) must be a non-zero multiple of 16. lanes must
+// be between 1 and 32, the range for which kconst.Pairs holds a constant for
+// the block distance 16*lanes.
 func Fold(crc uint64, p []byte, lanes int) uint64 {
 	if len(p) == 0 || len(p)%16 != 0 {
 		panic("model.Fold: len(p) must be a non-zero multiple of 16")

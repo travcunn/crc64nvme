@@ -7,7 +7,7 @@ import (
 	"encoding"
 	"hash"
 	"hash/crc64"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"testing"
 )
@@ -34,7 +34,7 @@ func TestUpdateEmpty(t *testing.T) {
 }
 
 func TestGenericMatchesOracle(t *testing.T) {
-	rng := rand.New(rand.NewSource(1))
+	rng := rand.NewChaCha8([32]byte{1})
 	buf := make([]byte, 4096+16)
 	rng.Read(buf)
 	for size := 0; size <= 4096; size++ {
@@ -49,9 +49,8 @@ func TestGenericMatchesOracle(t *testing.T) {
 }
 
 func TestHashStreaming(t *testing.T) {
-	rng := rand.New(rand.NewSource(2))
 	data := make([]byte, 100000)
-	rng.Read(data)
+	rand.NewChaCha8([32]byte{2}).Read(data)
 	want := oracle(0, data)
 	for _, chunk := range []int{1, 7, 15, 16, 17, 127, 128, 129, 1000, 4096} {
 		h := New()

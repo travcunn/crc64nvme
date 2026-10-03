@@ -3,7 +3,7 @@
 package crc64nvme
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"runtime"
 	"slices"
@@ -94,7 +94,7 @@ func TestArm64TierSelection(t *testing.T) {
 }
 
 func TestTiersMatchOracle(t *testing.T) {
-	rng := rand.New(rand.NewSource(4))
+	rng := rand.NewChaCha8([32]byte{4})
 	buf := make([]byte, 2048+16)
 	rng.Read(buf)
 	forEachTier(t, func(t *testing.T) {
@@ -111,15 +111,27 @@ func TestTiersMatchOracle(t *testing.T) {
 }
 
 func TestTiersLargeSizes(t *testing.T) {
-	rng := rand.New(rand.NewSource(5))
-	buf := make([]byte, 64<<20)
-	rng.Read(buf)
-	sizes := []int{4096, 8192, 65536, 1 << 20, 1048583, 4 << 20, 4194319, 64 << 20}
+	type input struct{ size, off int }
+	inputs := []input{
+		{4096, 0}, {8192, 0}, {65536, 0},
+		{1 << 20, 0}, {1 << 20, 1}, {1 << 20, 15},
+		{1048583, 0}, {1048583, 1}, {1048583, 15},
+		{4 << 20, 0}, {4194319, 0},
+	}
+	if !testing.Short() {
+		inputs = append(inputs, input{64 << 20, 0})
+	}
+	n := 0
+	for _, in := range inputs {
+		n = max(n, in.off+in.size)
+	}
+	buf := make([]byte, n)
+	rand.NewChaCha8([32]byte{5}).Read(buf)
 	forEachTier(t, func(t *testing.T) {
-		for _, size := range sizes {
-			p := buf[:size]
+		for _, in := range inputs {
+			p := buf[in.off : in.off+in.size]
 			if got, want := Checksum(p), oracle(0, p); got != want {
-				t.Fatalf("size %d: got %#x want %#x", size, got, want)
+				t.Fatalf("size %d off %d: got %#x want %#x", in.size, in.off, got, want)
 			}
 		}
 	})
@@ -127,7 +139,7 @@ func TestTiersLargeSizes(t *testing.T) {
 
 func TestKernelsMatchModel(t *testing.T) {
 	// Every kernel must equal the model at the kernel boundary (16-byte multiples).
-	rng := rand.New(rand.NewSource(6))
+	rng := rand.NewChaCha8([32]byte{6})
 	buf := make([]byte, 1024)
 	rng.Read(buf)
 	for _, tr := range availableTiers[1:] {
@@ -144,9 +156,10 @@ func TestKernelsMatchModel(t *testing.T) {
 }
 
 func TestStreamingAllTiers(t *testing.T) {
-	rng := rand.New(rand.NewSource(7))
+	src := rand.NewChaCha8([32]byte{7})
 	data := make([]byte, 50000)
-	rng.Read(data)
+	src.Read(data)
+	rng := rand.New(src)
 	want := oracle(0, data)
 	forEachTier(t, func(t *testing.T) {
 		for _, chunk := range []int{1, 15, 16, 17, 127, 128, 129, 255, 256, 257, 1023, 1024, 4097} {
@@ -164,7 +177,7 @@ func TestStreamingAllTiers(t *testing.T) {
 			h := New()
 			i := 0
 			for i < len(data) {
-				end := min(i+rng.Intn(3000), len(data))
+				end := min(i+rng.IntN(3000), len(data))
 				h.Write(data[i:end])
 				i = end
 			}
@@ -190,14 +203,14 @@ func TestAVX512Threshold(t *testing.T) {
 	for i := range buf {
 		buf[i] = byte(i * 7)
 	}
-	for _, min := range []int{16, 256, 1024, 4096} {
-		avx512Min = min
-		for _, size := range []int{min - 16, min - 1, min, min + 1, min + 16, min + 17} {
+	for _, threshold := range []int{16, 256, 1024, 4096} {
+		avx512Min = threshold
+		for _, size := range []int{threshold - 16, threshold - 1, threshold, threshold + 1, threshold + 16, threshold + 17} {
 			if size < 0 || size > len(buf) {
 				continue
 			}
 			if got, want := Checksum(buf[:size]), oracle(0, buf[:size]); got != want {
-				t.Fatalf("min %d size %d: got %#x want %#x", min, size, got, want)
+				t.Fatalf("threshold %d size %d: got %#x want %#x", threshold, size, got, want)
 			}
 		}
 	}
