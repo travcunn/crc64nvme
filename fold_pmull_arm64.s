@@ -97,7 +97,6 @@ reduce:
 	VLD1   (R4), [V8.B16]          // MU
 	VPMULL V8.D1, V2.D1, V3.Q1
 	VMOV   V3.D[0], R7             // t2
-	VMOV   R7, V3.D[0]
 	ADD    $32, R3, R4
 	VLD1   (R4), [V8.B16]          // POLY
 	VPMULL V8.D1, V3.D1, V4.Q1     // D
