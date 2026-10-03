@@ -10,7 +10,7 @@ var availableTiers = detectTiers()
 
 func detectTiers() []tier {
 	tiers := []tier{tierGeneric}
-	if false && cpu.ARM64.HasPMULL { // enabled in Task 8
+	if cpu.ARM64.HasPMULL {
 		tiers = append(tiers, tierPMULL)
 	}
 	if false && cpu.ARM64.HasPMULL && cpu.ARM64.HasSHA3 { // enabled in Task 9
@@ -20,8 +20,9 @@ func detectTiers() []tier {
 }
 
 func init() {
-	// Tasks 8 and 9 register kernels here, before the loop:
-	// foldFuncs[tierPMULL] = foldPMULL, etc.
+	// Kernels register here, before the loop. bestTier is the last entry of
+	// availableTiers that has a kernel registered.
+	foldFuncs[tierPMULL] = foldPMULL
 	for i := len(availableTiers) - 1; i >= 0; i-- {
 		if t := availableTiers[i]; t == tierGeneric || foldFuncs[t] != nil {
 			bestTier = t
