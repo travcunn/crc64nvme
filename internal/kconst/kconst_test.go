@@ -64,7 +64,31 @@ func TestFoldConstants(t *testing.T) {
 	}
 }
 
+// clmul returns the 128-bit bit-serial carryless product of a and b.
+func clmul(a, b uint64) (lo, hi uint64) {
+	for i := uint(0); i < 64; i++ {
+		if b>>i&1 == 1 {
+			lo ^= a << i
+			if i > 0 {
+				hi ^= a >> (64 - i)
+			}
+		}
+	}
+	return lo, hi
+}
+
 func TestBarrettConstants(t *testing.T) {
+	// Literal values fixed by the spec.
+	if MU != 0x27ecfa329aef9f77 {
+		t.Errorf("MU got %#x want 0x27ecfa329aef9f77", MU)
+	}
+	if POLY != 0x34d926535897936b {
+		t.Errorf("POLY got %#x want 0x34d926535897936b", POLY)
+	}
+	if K127 != 0x21e9761e252621ac {
+		t.Errorf("K127 got %#x want 0x21e9761e252621ac", K127)
+	}
+
 	// POLY = bitrev65(x^64 + P') mod 2^64: bit 0 is the x^64 term, bit j is P' bit 64-j.
 	wantPoly := uint64(1)
 	for j := 1; j < 64; j++ {
@@ -73,31 +97,21 @@ func TestBarrettConstants(t *testing.T) {
 	if POLY != wantPoly {
 		t.Errorf("POLY got %#x want %#x", POLY, wantPoly)
 	}
-	// mu = x^128 div P. Long division of x^128 by the 65-bit P, bit serial.
-	// Divide: start with dividend x^128. Quotient degree is 64. At each step k from 64
-	// down to 0, if the current remainder has the x^(64+k) term, subtract P<<k.
-	// Equivalent iterative form on 64-bit words:
-	var rem uint64
-	top := uint64(1) // the x^128 coefficient enters first
+
+	// MU = bitrev65(mu) mod 2^64 where mu = x^128 div P has degree 64. Bit 0 of MU
+	// is the implicit x^64 quotient term. Un-reflect the rest to get q, the low 64
+	// quotient bits, then check the division identity
+	//   x^128 = (x^64 + q)(x^64 + P') + r,  deg r < 64.
+	// Expanding, x^128 cancels and the x^64..x^127 coefficients of the right side must
+	// vanish, so the high word of clmul(q, P') must equal q XOR P'.
+	if MU&1 != 1 {
+		t.Errorf("MU bit 0 = 0, want the implicit x^64 quotient term")
+	}
 	var q uint64
-	for k := 64; k >= 0; k-- {
-		// rem holds coefficients x^(64+k-1 .. k) of the running dividend; top is x^(64+k).
-		if top == 1 {
-			rem ^= polyNormal
-			if k < 64 {
-				q |= 1 << uint(k)
-			}
-		}
-		// shift in the next dividend coefficient (always zero after x^128)
-		top = rem >> 63
-		rem <<= 1
-	}
-	// q now holds quotient bits 63..0 (bit 64 is implicitly 1). MU = bitrev65(mu) mod 2^64.
-	wantMu := uint64(1) // bit 0 <- quotient bit 64
 	for j := 1; j < 64; j++ {
-		wantMu |= (q >> uint(64-j) & 1) << uint(j)
+		q |= (MU >> uint(j) & 1) << uint(64-j)
 	}
-	if MU != wantMu {
-		t.Errorf("MU got %#x want %#x", MU, wantMu)
+	if _, hi := clmul(q, polyNormal); hi != q^polyNormal {
+		t.Errorf("x^128 != (x^64+q)(x^64+P') + r: clmul high word %#x, want q^P' = %#x", hi, q^polyNormal)
 	}
 }
