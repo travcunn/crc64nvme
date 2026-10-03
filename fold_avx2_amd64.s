@@ -56,6 +56,8 @@ TEXT ·foldAVX2(SB), NOSPLIT, $0-40
 	CMPQ    CX, $256
 	JB      combine
 
+	// Loop entries are aligned so performance does not depend on link layout.
+	PCALIGN $32
 loop:
 	FOLD_LANE256(Y0, 0)
 	FOLD_LANE256(Y1, 32)
@@ -98,6 +100,7 @@ tail:
 	JZ      reduce
 	VMOVDQU 0(DX), X8             // d=16: K(191), K(127)
 
+	PCALIGN $32
 tailloop:
 	FOLD_LANE128(X0, 0)
 	ADDQ $16, SI

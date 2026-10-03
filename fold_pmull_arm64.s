@@ -78,6 +78,8 @@ lanes16:
 	CMP    $256, R2
 	BLO    fold16to8
 
+	// Loop entries are aligned so performance does not depend on link layout.
+	PCALIGN $16
 loop16:
 	VLD1.P 64(R1), [V20.B16, V21.B16, V22.B16, V23.B16]
 	FOLD_LANE(V0, V20)
@@ -129,6 +131,7 @@ lanes8:
 	CMP    $128, R2
 	BLO    combine8
 
+	PCALIGN $16
 loop8:
 	VLD1.P 64(R1), [V20.B16, V21.B16, V22.B16, V23.B16]
 	FOLD_LANE(V0, V20)
@@ -159,6 +162,7 @@ tail:
 	CBZ  R2, reduce
 	VLD1 (R3), [V16.B16]           // d=16
 
+	PCALIGN $16
 tailloop:
 	VLD1.P 16(R1), [V20.B16]
 	FOLD_LANE(V0, V20)

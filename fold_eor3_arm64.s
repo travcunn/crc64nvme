@@ -39,6 +39,8 @@ TEXT ·foldEOR3(SB), NOSPLIT, $0-40
 	CMP    $128, R2
 	BLO    combine
 
+	// Loop entries are aligned so performance does not depend on link layout.
+	PCALIGN $16
 loop:
 	VLD1.P 64(R1), [V11.B16, V12.B16, V13.B16, V14.B16]
 	FOLD_LANE(V0, V11)
@@ -75,6 +77,7 @@ tail:
 	CBZ  R2, reduce
 	VLD1 (R3), [V8.B16]            // d=16
 
+	PCALIGN $16
 tailloop:
 	VLD1.P 16(R1), [V11.B16]
 	FOLD_LANE(V0, V11)
